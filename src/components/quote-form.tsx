@@ -2,6 +2,7 @@ import { Quote, QuoteContext, QuoteType, useQuotes } from '@/context/quotes';
 import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -11,6 +12,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import type { TextInputInstance } from 'react-native';
 
 type Props = {
   quote?: Quote;
@@ -28,14 +30,15 @@ export function QuoteForm({ quote, onSaved, onCancelEdit }: Props) {
   const [type, setType] = useState<QuoteType>(quote?.type ?? 'Personal');
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
-  const shake = useRef(new Animated.Value(0)).current;
+  const [shake] = useState(() => new Animated.Value(0));
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const authorInputRef = useRef<TextInputInstance>(null);
 
   useEffect(() => {
-    setText(quote?.text ?? '');
-    setAuthor(quote?.author ?? '');
-    setContext(quote?.context ?? null);
-    setType(quote?.type ?? 'Personal');
-  }, [quote]);
+    return () => {
+      if (savedTimer.current) clearTimeout(savedTimer.current);
+    };
+  }, []);
 
   const shakeCard = () => {
     shake.setValue(0);
@@ -64,13 +67,14 @@ export function QuoteForm({ quote, onSaved, onCancelEdit }: Props) {
         await updateQuote(quote.id, { text: trimmedText, author: trimmedAuthor, context, type });
         onSaved?.({ ...quote, text: trimmedText, author: trimmedAuthor, context, type });
       } else {
-        const created = await addQuote({ text: trimmedText, author: trimmedAuthor, context, type });
+        await addQuote({ text: trimmedText, author: trimmedAuthor, context, type });
         setSaved(true);
         setText('');
         setAuthor('');
         setContext(null);
         setType('Personal');
-        setTimeout(() => setSaved(false), 1000);
+        if (savedTimer.current) clearTimeout(savedTimer.current);
+        savedTimer.current = setTimeout(() => setSaved(false), 2000);
       }
     } catch (storageError) {
       console.error('Could not save quote:', storageError);
@@ -80,37 +84,47 @@ export function QuoteForm({ quote, onSaved, onCancelEdit }: Props) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.keyboardView}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <Animated.View style={[styles.card, { transform: [{ translateX: shake }] }]}>
-          <Text style={styles.title}>{quote ? 'Edit Quote' : 'Add a Quote'}</Text>
-          <TextInput
-            style={[styles.input, styles.quoteInput]}
-            value={text}
-            onChangeText={(value) => {
-              setText(value);
-              if (error) setError('');
-              setSaved(false);
-            }}
-            placeholder="What did they say?"
-            placeholderTextColor="#8A8178"
-            multiline
-            textAlignVertical="top"
-          />
-          <TextInput
-            style={styles.input}
-            value={author}
-            onChangeText={(value) => {
-              setAuthor(value);
-              if (error) setError('');
-              setSaved(false);
-            }}
-            placeholder="Who said it?"
-            placeholderTextColor="#8A8178"
-          />
+    <Pressable style={styles.keyboardView} onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled">
+          <Animated.View style={[styles.card, { transform: [{ translateX: shake }] }]}>
+            <Text style={styles.title}>{quote ? 'Edit Quote' : 'Add a Quote'}</Text>
+            <TextInput
+              style={[styles.input, styles.quoteInput]}
+              value={text}
+              onChangeText={(value) => {
+                setText(value);
+                if (error) setError('');
+                setSaved(false);
+              }}
+              placeholder="What did they say?"
+              placeholderTextColor="#8A8178"
+              multiline
+              blurOnSubmit
+              returnKeyType="next"
+              onSubmitEditing={() => authorInputRef.current?.focus()}
+              textAlignVertical="top"
+            />
+            <TextInput
+              ref={authorInputRef}
+              style={styles.input}
+              value={author}
+              onChangeText={(value) => {
+                setAuthor(value);
+                if (error) setError('');
+                setSaved(false);
+              }}
+              placeholder="Who said it?"
+              placeholderTextColor="#8A8178"
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
+            />
 
           <Text style={styles.label}>Context</Text>
           <View style={styles.chips}>
@@ -155,7 +169,8 @@ export function QuoteForm({ quote, onSaved, onCancelEdit }: Props) {
           ) : null}
         </Animated.View>
       </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </Pressable>
   );
 }
 

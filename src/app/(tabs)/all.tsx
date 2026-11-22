@@ -50,7 +50,7 @@ export default function AllQuotesScreen() {
           </View>
         ) : noMatches ? (
           <View style={styles.empty}>
-            <Text style={styles.emptyText}>No quotes match "{search}".</Text>
+            <Text style={styles.emptyText}>{`No quotes match "${search}".`}</Text>
           </View>
         ) : (
           <FlatList
