@@ -16,7 +16,7 @@ export default function EditQuoteScreen() {
           <QuoteForm
             key={quote.id}
             quote={quote}
-            onSaved={() => router.replace({ pathname: '/quote/[id]', params: { id } })}
+            onSaved={() => router.back()}
             onCancelEdit={() => router.back()}
           />
         ) : (

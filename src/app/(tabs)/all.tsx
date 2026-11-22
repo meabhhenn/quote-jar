@@ -64,7 +64,18 @@ export default function AllQuotesScreen() {
                   styles.card,
                   item.type === 'Famous' ? styles.cardFamous : styles.cardPersonal,
                 ]}>
-                <Text style={styles.quoteText}>{item.text}</Text>
+                <View style={styles.quoteWrap}>
+                  <Text style={styles.openQuote} accessibilityElementsHidden importantForAccessibility="no">
+                    “
+                  </Text>
+                  <Text style={styles.quoteText}>{item.text}</Text>
+                  <Text
+                    style={styles.closeQuote}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no">
+                    ”
+                  </Text>
+                </View>
                 {item.favorite ? <Text style={styles.star}>★</Text> : null}
               </Pressable>
             )}
@@ -104,7 +115,38 @@ const styles = StyleSheet.create({
   },
   cardPersonal: { backgroundColor: '#F8D7E3' },
   cardFamous: { backgroundColor: '#D6E6F5' },
-  quoteText: { fontSize: 17, lineHeight: 24, color: '#3A3A3A' },
+  quoteWrap: { paddingHorizontal: 24, paddingVertical: 8 },
+  openQuote: {
+    alignSelf: 'flex-start',
+    height: 42,
+    marginLeft: -10,
+    marginTop: -10,
+    marginBottom: -2,
+    fontFamily: 'Georgia',
+    fontSize: 52,
+    lineHeight: 52,
+    fontWeight: '900',
+    color: '#B8A9E3',
+    transform: [{ rotate: '-8deg' }],
+  },
+  quoteText: {
+    fontSize: 17,
+    lineHeight: 24,
+    color: '#3A3A3A',
+  },
+  closeQuote: {
+    alignSelf: 'flex-end',
+    height: 42,
+    marginRight: 28,
+    marginTop: -2,
+    marginBottom: -10,
+    fontFamily: 'Georgia',
+    fontSize: 52,
+    lineHeight: 52,
+    fontWeight: '900',
+    color: '#B8A9E3',
+    transform: [{ rotate: '8deg' }],
+  },
   star: { position: 'absolute', right: 12, bottom: 8, fontSize: 20, color: '#3A3A3A' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 100 },
   emptyText: { fontSize: 18, lineHeight: 26, textAlign: 'center', color: '#3A3A3A', marginBottom: 18 },

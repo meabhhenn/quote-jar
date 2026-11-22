@@ -57,7 +57,18 @@ export default function QuoteDetailScreen() {
             styles.card,
             quote.type === 'Famous' ? styles.cardFamous : styles.cardPersonal,
           ]}>
-          <Text style={styles.quoteText}>{quote.text}</Text>
+          <View style={styles.quoteWrap}>
+            <Text style={styles.openQuote} accessibilityElementsHidden importantForAccessibility="no">
+              “
+            </Text>
+            <Text style={styles.quoteText}>{quote.text}</Text>
+            <Text
+              style={styles.closeQuote}
+              accessibilityElementsHidden
+              importantForAccessibility="no">
+              ”
+            </Text>
+          </View>
           <Text style={styles.author}>— {quote.author}</Text>
           <Text style={styles.meta}>{date}</Text>
           {quote.context ? <Text style={styles.meta}>{quote.context}</Text> : null}
@@ -112,7 +123,34 @@ const styles = StyleSheet.create({
   },
   cardPersonal: { backgroundColor: '#F8D7E3' },
   cardFamous: { backgroundColor: '#D6E6F5' },
-  quoteText: { fontSize: 30, lineHeight: 40, fontWeight: '700', color: '#3A3A3A', textAlign: 'center', marginBottom: 22 },
+  quoteWrap: { width: '100%', paddingHorizontal: 18, marginBottom: 22 },
+  openQuote: {
+    alignSelf: 'flex-start',
+    height: 62,
+    marginLeft: -8,
+    marginTop: -14,
+    marginBottom: -4,
+    fontFamily: 'Georgia',
+    fontSize: 72,
+    lineHeight: 72,
+    fontWeight: '900',
+    color: '#B8A9E3',
+    transform: [{ rotate: '-8deg' }],
+  },
+  quoteText: { fontSize: 30, lineHeight: 40, fontWeight: '700', color: '#3A3A3A', textAlign: 'center' },
+  closeQuote: {
+    alignSelf: 'flex-end',
+    height: 62,
+    marginRight: -8,
+    marginTop: -4,
+    marginBottom: -14,
+    fontFamily: 'Georgia',
+    fontSize: 72,
+    lineHeight: 72,
+    fontWeight: '900',
+    color: '#B8A9E3',
+    transform: [{ rotate: '8deg' }],
+  },
   author: { fontSize: 20, lineHeight: 28, color: '#3A3A3A', textAlign: 'center', marginBottom: 10 },
   meta: { fontSize: 16, lineHeight: 23, color: '#5D5955', textAlign: 'center' },
   actions: { flexDirection: 'row', gap: 8, marginTop: 14 },
